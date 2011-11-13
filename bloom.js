@@ -29,10 +29,10 @@ caterwaul.js_all()(function ($) {
                                                             add(xs = arguments) = xs *!~item[hash_functions *![set_bit(x(item) >>> 0)]] -seq -re- self,
                                                             contains(item)      = !(hash_functions |[!get_bit(x(item) >>> 0)] |seq),
 
-                                                            union(filter)       = $.bloom(hs, table *[x | ft[xi]] -seq) -where [ft = f.table],
-                                                            intersect(filter)   = $.bloom(hs, table *[x & ft[xi]] -seq) -where [ft = f.table],
-                                                            subset(f)           = !(table |[(x & ft[xi]) !== x] |seq) -where [ft = f.table],
-                                                            reduce_to(size)     = $.bloom(hs, n[size] *[0] -seq -se [table *![it[xi & mask] |= x] -seq] -where [mask = size - 1])],
+                                                            union(f)        = $.bloom(hs, table *[x | ft[xi]] -seq) -where [ft = f.table],
+                                                            intersect(f)    = $.bloom(hs, table *[x & ft[xi]] -seq) -where [ft = f.table],
+                                                            subset(f)       = !(table |[(x & ft[xi]) !== x] |seq)   -where [ft = f.table],
+                                                            reduce_to(size) = $.bloom(hs, n[size] *[0] -seq -se [table *![it[xi & mask] |= x] -seq] -where [mask = size - 1])],
 
 // Standard hash functions.
 // These are just for convenience; you can also define your own. These functions are optimized to avoid allocating memory.
