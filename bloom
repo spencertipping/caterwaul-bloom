@@ -3295,7 +3295,7 @@ arbitrarily large numbers, preferably unsigned integers) and the number of 32-bi
                                                             mask  = size - 1 -se [raise [new Error('Caterwaul Bloom filter: #{size} is not a power of two')] -when [size & (size - 1)]],
 
                                                             set_bit(n) = table[n >>> 5 & mask] |= (1 << (n & 31)),
-                                                            get_bit(n) = !! (table[n >>> 5 & mask] & (1 << (n & 31))),
+                                                            get_bit(n) = table[n >>> 5 & mask] & (1 << (n & 31)),
                                                             hash()     = table /[x ^ x0] -seq,
 
                                                             add(xs = arguments) = xs *!~item[hash_functions *![set_bit(x(item) >>> 0)]] -seq -re- self,
