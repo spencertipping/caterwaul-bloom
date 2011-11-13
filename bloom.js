@@ -19,24 +19,45 @@ caterwaul.js_all()(function ($) {
 // arbitrarily large numbers, preferably unsigned integers) and the number of 32-bit words you want to use for the table. The bit counting algorithm was retrieved from
 // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel.
 
-  $.bloom(hash_functions, words, self = result) = wcapture [table = words instanceof Array ? +words -seq : n[words] *[0] -seq,
-                                                            size  = words instanceof Array ? words.length : words,
-                                                            mask  = size - 1 -se [raise [new Error('Caterwaul Bloom filter: #{size} is not a power of two')] -when [size & (size - 1)]],
-                                                            hs    = hash_functions,
+  $.bloom(hash_functions, words) = words === 1 ? new $.bloom.single(hash_functions) : new $.bloom.array(hash_functions, words),
 
-                                                            set_bit(n) = table[n >>> 5 & mask] |= (1 << (n & 31)),
-                                                            get_bit(n) = table[n >>> 5 & mask] & (1 << (n & 31)),
-                                                            hash()     = table /[x ^ x0] -seq,
-                                                            density()  = table /[0][x0 + (x -= x >>> 1 & 0x55555555, x = (x & 0x33333333) + ((x >>> 2) & 0x33333333),
-                                                                                          (x + (x >>> 4) & 0xf0f0f0f) * 0x1010101 >>> 24)] -seq,
+  $.bloom.array(hs, words) = this -se [it.table = words instanceof Array ? +words -seq : n[words] *[0] -seq,
+                                       it.size  = words instanceof Array ? words.length : words,
+                                       it.mask  = it.size - 1 -se [raise [new Error('Caterwaul Bloom filter: #{it.size} is not a power of two')] -when [it.size & (it.size - 1)]],
+                                       it.hs    = hs],
 
-                                                            add(xs = arguments) = xs *!~item[hs *![set_bit(x(item) >>> 0)]] -seq -re- self,
-                                                            contains(item)      = !(hs |[!get_bit(x(item) >>> 0)] |seq),
+  $.bloom.array.prototype /-$.merge/ capture [set_bit(n) = this.table[n >>> 5 & this.mask] |= (1 << (n & 31)),
+                                              get_bit(n) = this.table[n >>> 5 & this.mask] & (1 << (n & 31)),
+                                              hash()     = this.table /[x ^ x0] -seq,
+                                              density()  = this.table /[0][x0 + (x -= x >>> 1 & 0x55555555, x = (x & 0x33333333) + ((x >>> 2) & 0x33333333),
+                                                                                 (x + (x >>> 4) & 0xf0f0f0f) * 0x1010101 >>> 24)] -seq,
 
-                                                            union(f)        = $.bloom(hs, table *[x | ft[xi]] -seq) -where [ft = f.table],
-                                                            intersect(f)    = $.bloom(hs, table *[x & ft[xi]] -seq) -where [ft = f.table],
-                                                            subset(f)       = !(table |[(x & ft[xi]) !== x] |seq)   -where [ft = f.table],
-                                                            reduce_to(size) = $.bloom(hs, n[size] *[0] -seq -se [table *![it[xi & mask] |= x] -seq] -where [mask = size - 1])],
+                                              add(xs = arguments) = xs *!~item[this.hs *![this.set_bit(x(item))]] -seq -re- this,
+                                              contains(item)      = !(this.hs |[!this.get_bit(x(item))] |seq),
+
+                                              union(f)        = $.bloom(this.hs, this.table *[x | ft[xi]] -seq) -where [ft = f.table],
+                                              intersect(f)    = $.bloom(this.hs, this.table *[x & ft[xi]] -seq) -where [ft = f.table],
+                                              subset(f)       = !(this.table |[(x & ft[xi]) !== x] |seq)   -where [ft = f.table],
+                                              reduce_to(size) = $.bloom(this.hs, n[size] *[0] -seq -se [this.table *![it[xi & mask] |= x] -seq] -where [mask = size - 1])],
+
+// Unboxed implementation.
+// This implementation doesn't allocate the array, instead using a flat integer for the value. As such, it has a fixed size of 32 bits. It is automatically created when you request a filter of
+// size one.
+
+  $.bloom.single(hs, v) = this -se [it.value = v || 0, it.size = 1, it.hs = hs],
+
+  $.bloom.single.prototype /-$.merge/ capture [set_bit(n)              = this.value |= 1 << (n & 31),
+                                               get_bit(n)              = this.value & 1 << (n & 31),
+                                               hash()                  = this.value,
+                                               density(x = this.value) = (x -= x >>> 1 & 0x55555555, x = (x & 0x33333333) + ((x >>> 2) & 0x33333333),
+                                                                          (x + (x >>> 4) & 0xf0f0f0f) * 0x1010101 >>> 24),
+
+                                               add(xs = arguments) = xs *!~item[this.hs *![this.set_bit(x(item))]] -seq -re- this,
+                                               contains(item)      = !(this.hs |[!this.get_bit(x(item))] |seq),
+
+                                               union(f)     = new $.bloom.single(this.hs, this.value | f.value),
+                                               intersect(f) = new $.bloom.single(this.hs, this.value & f.value),
+                                               subset(f)    = (this.value & f.value) === this.value],
 
 // Standard hash functions.
 // These are just for convenience; you can also define your own. These functions are optimized to avoid allocating memory.
