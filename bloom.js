@@ -21,13 +21,14 @@ caterwaul.js_all()(function ($) {
   $.bloom(hash_functions, words, self = result) = wcapture [table = words instanceof Array ? +words -seq : n[words] *[0] -seq,
                                                             size  = words instanceof Array ? words.length : words,
                                                             mask  = size - 1 -se [raise [new Error('Caterwaul Bloom filter: #{size} is not a power of two')] -when [size & (size - 1)]],
+                                                            hs    = hash_functions,
 
                                                             set_bit(n) = table[n >>> 5 & mask] |= (1 << (n & 31)),
                                                             get_bit(n) = table[n >>> 5 & mask] & (1 << (n & 31)),
                                                             hash()     = table /[x ^ x0] -seq,
 
-                                                            add(xs = arguments) = xs *!~item[hash_functions *![set_bit(x(item) >>> 0)]] -seq -re- self,
-                                                            contains(item)      = !(hash_functions |[!get_bit(x(item) >>> 0)] |seq),
+                                                            add(xs = arguments) = xs *!~item[hs *![set_bit(x(item) >>> 0)]] -seq -re- self,
+                                                            contains(item)      = !(hs |[!get_bit(x(item) >>> 0)] |seq),
 
                                                             union(f)        = $.bloom(hs, table *[x | ft[xi]] -seq) -where [ft = f.table],
                                                             intersect(f)    = $.bloom(hs, table *[x & ft[xi]] -seq) -where [ft = f.table],
