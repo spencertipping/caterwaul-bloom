@@ -1,69 +1,101 @@
-// Variable-size Bloom filters | Spencer Tipping
-// Licensed under the terms of the MIT source code license
-
-// Introduction.
-// This Bloom filter implementation is motivated by Havoc, which needs a way to partition trees into hashed sets as well as quickly rejecting impossible rewrites. The use case there is that there
-// are syntax trees with constants and variables. The Bloom filter represents the set of constants present in the syntax tree. The subset relation can be checked by the usual A & B = A (if B
-// contains everything in A), which fails quickly even for large filters and is computationally inexpensive.
-
-// Ever since reading a paper about the latency of various arithmetic operations on x86, I've been reluctant to use things like division and modulus. So all of these filters are power-of-two
-// sizes and use bitwise operations for modulus. This has the interesting benefit that all Bloom filter sizes differ by an integer multiple, which means that they can be dynamically rehashed to
-// compare across sizes. For instance, suppose you've got an 8-filter and a 16-filter. You can do subset comparisons by OR-ing the two halves of the 16-filter, like this:
-
-// | (f8[0] & (f16[0] | f16[8])) === f8[0] && (f8[1] & (f16[1] | f16[9])) === f8[1] && ...
-
-caterwaul.js_all()(function ($) {
-
-// Implementation.
-// Caterwaul Bloom filters are implemented as bit-vectors stuffed into 32-bit signed integer values. When you build a filter, you specify the array of hash functions (which map stuff to
-// arbitrarily large numbers, preferably unsigned integers) and the number of 32-bit words you want to use for the table. The bit counting algorithm was retrieved from
-// http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel.
-
-  $.bloom(hash_functions, words) = words === 1 ? new $.bloom.single(hash_functions) : new $.bloom.array(hash_functions, words),
-
-  $.bloom.array(hs, words) = this -se [it.table = words instanceof Array ? +words -seq : n[words] *[0] -seq,
-                                       it.size  = words instanceof Array ? words.length : words,
-                                       it.mask  = it.size - 1 -se [raise [new Error('Caterwaul Bloom filter: #{it.size} is not a power of two')] -when [it.size & (it.size - 1)]],
-                                       it.hs    = hs],
-
-  $.bloom.array.prototype /-$.merge/ capture [set_bit(n) = this.table[n >>> 5 & this.mask] |= (1 << (n & 31)),
-                                              get_bit(n) = this.table[n >>> 5 & this.mask] & (1 << (n & 31)),
-                                              hash()     = this.table /[x ^ x0] -seq,
-                                              density()  = this.table /[0][x0 + (x -= x >>> 1 & 0x55555555, x = (x & 0x33333333) + ((x >>> 2) & 0x33333333),
-                                                                                 (x + (x >>> 4) & 0xf0f0f0f) * 0x1010101 >>> 24)] -seq,
-
-                                              add(xs = arguments) = xs *!~item[this.hs *![this.set_bit(x(item))]] -seq -re- this,
-                                              contains(item)      = !(this.hs |[!this.get_bit(x(item))] |seq),
-
-                                              union(f)        = $.bloom(this.hs, this.table *[x | ft[xi]] -seq) -where [ft = f.table],
-                                              intersect(f)    = $.bloom(this.hs, this.table *[x & ft[xi]] -seq) -where [ft = f.table],
-                                              subset(f)       = !(this.table |[(x & ft[xi]) !== x] |seq)   -where [ft = f.table],
-                                              reduce_to(size) = $.bloom(this.hs, n[size] *[0] -seq -se [this.table *![it[xi & mask] |= x] -seq] -where [mask = size - 1])],
-
-// Unboxed implementation.
-// This implementation doesn't allocate the array, instead using a flat integer for the value. As such, it has a fixed size of 32 bits. It is automatically created when you request a filter of
-// size one.
-
-  $.bloom.single(hs, v) = this -se [it.value = v || 0, it.size = 1, it.hs = hs],
-
-  $.bloom.single.prototype /-$.merge/ capture [set_bit(n)              = this.value |= 1 << (n & 31),
-                                               get_bit(n)              = this.value & 1 << (n & 31),
-                                               hash()                  = this.value,
-                                               density(x = this.value) = (x -= x >>> 1 & 0x55555555, x = (x & 0x33333333) + ((x >>> 2) & 0x33333333),
-                                                                          (x + (x >>> 4) & 0xf0f0f0f) * 0x1010101 >>> 24),
-
-                                               add(xs = arguments) = xs *!~item[this.hs *![this.set_bit(x(item))]] -seq -re- this,
-                                               contains(item)      = !(this.hs |[!this.get_bit(x(item))] |seq),
-
-                                               union(f)     = new $.bloom.single(this.hs, this.value | f.value),
-                                               intersect(f) = new $.bloom.single(this.hs, this.value & f.value),
-                                               subset(f)    = (this.value & f.value) === this.value],
-
-// Standard hash functions.
-// These are just for convenience; you can also define your own. These functions are optimized to avoid allocating memory.
-
-  $.bloom /-$.merge/ wcapture [jenkins_string_hash(key)             = function (s) {for (var h = key, i = 0, l = s.length; i < l; ++i) h += s.charCodeAt(i), h += h << 10, h ^= h >>> 6;
-                                                                                    return h += h << 3, h ^= h >>> 11, h += h << 15},
-                               jenkins_string(xs = arguments)       = +xs *jenkins_string_hash -seq]})(caterwaul);
-
-// Generated by SDoc 
+caterwaul.module( 'bloom' ,function($) {$.bloom=function(hash_functions,words) {;
+return words===1?new $.bloom.single(hash_functions) :new $.bloom.array(hash_functions,words) } ,$.bloom.array=function(hs,words) {;
+return(function(it) {return(it.table=words instanceof Array?Array.prototype.slice.call( (words) ) : (function(xs) {var x,x0,xi,xl,xr;
+for(var xr=new xs.constructor() ,xi=0,xl=xs.length;
+xi<xl;
+ ++xi)x=xs[xi] ,xr.push( (0) ) ;
+return xr} ) .call(this, (function(i,u,s) {if( (u-i) *s<=0)return[ ] ;
+for(var r= [ ] ,d=u-i;
+d>0?i<u:i>u;
+i+=s)r.push(i) ;
+return r} ) ( (0) , (words) , (1) ) ) ,it.size=words instanceof Array?words.length:words,it.mask= (function(it) {return( ( (it.size& (it.size-1) ) && ( (function( ) {throw new Error( ( 'Caterwaul Bloom filter: ' + (it.size) + ' is not a power of two' ) ) } ) .call(this) ) ) ) ,it} ) .call(this, (it.size-1) ) ,it.hs=hs) ,it} ) .call(this, (this) ) } ,$.merge($.bloom.array.prototype, {set_bit:function( /* unary , node */n) {;
+return this.table[n>>>5&this.mask] |= (1<< (n&31) ) } ,get_bit:function( /* unary , node */n) {;
+return this.table[n>>>5&this.mask] & (1<< (n&31) ) } ,hash:function( /* unary , node */) {;
+return(function(xs) {var x,x0,xi,xl,xr;
+for(var x0=xs[0] ,xi=1,xl=xs.length;
+xi<xl;
+ ++xi)x=xs[xi] ,x0= (x^x0) ;
+return x0} ) .call(this,this.table) } ,density:function( /* unary , node */) {;
+return(function(xs) {var x,x0,xi,xl,xr;
+for(var x0= (0) ,xi=0,xl=xs.length;
+xi<xl;
+ ++xi)x=xs[xi] ,x0= (x0+ (x-=x>>>1&0x55555555,x= (x&0x33333333) + ( (x>>>2) &0x33333333) , (x+ (x>>>4) &0xf0f0f0f) *0x1010101>>>24) ) ;
+return x0} ) .call(this,this.table) } ,add:function() { /* unary ; node */var xs=arguments;
+return(function(it) {return(this) } ) .call(this, ( (function(items) {var item,item0,itemi,iteml,itemr;
+for(var itemi=0,iteml=items.length;
+itemi<iteml;
+ ++itemi)item=items[itemi] , ( (function(xs) {var x,x0,xi,xl,xr;
+for(var xi=0,xl=xs.length;
+xi<xl;
+ ++xi)x=xs[xi] , (this.set_bit(x(item) ) ) ;
+return xs} ) .call(this,this.hs) ) ;
+return items} ) .call(this,xs) ) ) } ,contains:function( /* unary , node */item) {;
+return! ( (function(xs) {var x,x0,xi,xl,xr;
+for(var x=xs[0] ,xi=0,xl=xs.length,x_3_k_7ZGtyZkryoxXwGOSUinw;
+xi<xl;
+ ++xi) {x=xs[xi] ;
+if(x_3_k_7ZGtyZkryoxXwGOSUinw= ( !this.get_bit(x(item) ) ) )return x_3_k_7ZGtyZkryoxXwGOSUinw}return false} ) .call(this,this.hs) ) } ,union:function( /* unary , node */f) {;
+return(function( ) {var ft=f.table;
+return($.bloom(this.hs, (function(xs) {var x,x0,xi,xl,xr;
+for(var xr=new xs.constructor() ,xi=0,xl=xs.length;
+xi<xl;
+ ++xi)x=xs[xi] ,xr.push( (x|ft[xi] ) ) ;
+return xr} ) .call(this,this.table) ) ) } ) .call(this) } ,intersect:function( /* unary , node */f) {;
+return(function( ) {var ft=f.table;
+return($.bloom(this.hs, (function(xs) {var x,x0,xi,xl,xr;
+for(var xr=new xs.constructor() ,xi=0,xl=xs.length;
+xi<xl;
+ ++xi)x=xs[xi] ,xr.push( (x&ft[xi] ) ) ;
+return xr} ) .call(this,this.table) ) ) } ) .call(this) } ,subset:function( /* unary , node */f) {;
+return(function( ) {var ft=f.table;
+return( ! ( (function(xs) {var x,x0,xi,xl,xr;
+for(var x=xs[0] ,xi=0,xl=xs.length,x_3_k_7ZGtyZkryoxXwGOSUinw;
+xi<xl;
+ ++xi) {x=xs[xi] ;
+if(x_3_k_7ZGtyZkryoxXwGOSUinw= ( (x&ft[xi] ) !==x) )return x_3_k_7ZGtyZkryoxXwGOSUinw}return false} ) .call(this,this.table) ) ) } ) .call(this) } ,reduce_to:function( /* unary , node */size) {;
+return $.bloom(this.hs, (function( ) {var mask=size-1;
+return( (function(it) {return( (function(xs) {var x,x0,xi,xl,xr;
+for(var xi=0,xl=xs.length;
+xi<xl;
+ ++xi)x=xs[xi] , (it[xi&mask] |=x) ;
+return xs} ) .call(this,this.table) ) ,it} ) .call(this, ( (function(xs) {var x,x0,xi,xl,xr;
+for(var xr=new xs.constructor() ,xi=0,xl=xs.length;
+xi<xl;
+ ++xi)x=xs[xi] ,xr.push( (0) ) ;
+return xr} ) .call(this, (function(i,u,s) {if( (u-i) *s<=0)return[ ] ;
+for(var r= [ ] ,d=u-i;
+d>0?i<u:i>u;
+i+=s)r.push(i) ;
+return r} ) ( (0) , (size) , (1) ) ) ) ) ) } ) .call(this) ) } } ) ,$.bloom.single=function(hs,v) {;
+return(function(it) {return(it.value=v||0,it.size=1,it.hs=hs) ,it} ) .call(this, (this) ) } ,$.merge($.bloom.single.prototype, {set_bit:function( /* unary , node */n) {;
+return this.value|=1<< (n&31) } ,get_bit:function( /* unary , node */n) {;
+return this.value&1<< (n&31) } ,hash:function( /* unary , node */) {;
+return this.value} ,density:function() { /* unary ; node */var x=this.value;
+return(x-=x>>>1&0x55555555,x= (x&0x33333333) + ( (x>>>2) &0x33333333) , (x+ (x>>>4) &0xf0f0f0f) *0x1010101>>>24) } ,add:function() { /* unary ; node */var xs=arguments;
+return(function(it) {return(this) } ) .call(this, ( (function(items) {var item,item0,itemi,iteml,itemr;
+for(var itemi=0,iteml=items.length;
+itemi<iteml;
+ ++itemi)item=items[itemi] , ( (function(xs) {var x,x0,xi,xl,xr;
+for(var xi=0,xl=xs.length;
+xi<xl;
+ ++xi)x=xs[xi] , (this.set_bit(x(item) ) ) ;
+return xs} ) .call(this,this.hs) ) ;
+return items} ) .call(this,xs) ) ) } ,contains:function( /* unary , node */item) {;
+return! ( (function(xs) {var x,x0,xi,xl,xr;
+for(var x=xs[0] ,xi=0,xl=xs.length,x_3_k_7ZGtyZkryoxXwGOSUinw;
+xi<xl;
+ ++xi) {x=xs[xi] ;
+if(x_3_k_7ZGtyZkryoxXwGOSUinw= ( !this.get_bit(x(item) ) ) )return x_3_k_7ZGtyZkryoxXwGOSUinw}return false} ) .call(this,this.hs) ) } ,union:function( /* unary , node */f) {;
+return new $.bloom.single(this.hs,this.value|f.value) } ,intersect:function( /* unary , node */f) {;
+return new $.bloom.single(this.hs,this.value&f.value) } ,subset:function( /* unary , node */f) {;
+return(this.value&f.value) ===this.value} } ) ,$.merge($.bloom, (function( ) {var jenkins_string_hash=function( /* unary , node */key) {;
+return function(s) {for(var h=key,i=0,l=s.length;
+i<l;
+ ++i)h+=s.charCodeAt(i) ,h+=h<<10,h^=h>>>6;
+return h+=h<<3,h^=h>>>11,h+=h<<15} } ,jenkins_string=function() { /* unary ; node */var xs=arguments;
+return(function(xs) {var x,x0,xi,xl,xr;
+for(var xr=new xs.constructor() ,xi=0,xl=xs.length;
+xi<xl;
+ ++xi)x=xs[xi] ,xr.push( ( (jenkins_string_hash) .call( {x0:x0,xi:xi,xl:xl,xs:xs,xr:xr} ,x) ) ) ;
+return xr} ) .call(this,Array.prototype.slice.call( (xs) ) ) } ;
+return( {jenkins_string_hash:jenkins_string_hash,jenkins_string:jenkins_string} ) } ) .call(this) ) } ) ;
